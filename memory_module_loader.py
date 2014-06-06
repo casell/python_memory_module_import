@@ -21,7 +21,7 @@ import sys
 import imp
 from zipfile import PyZipFile
 from tarfile import open as taropen
-from StringIO import StringIO
+from io import BytesIO
 from base64 import decodestring
 from os.path import splitext
 
@@ -42,7 +42,7 @@ class Loader:
         mod.__file__ = "<%s>" % fullname
         mod.__loader__ = self
         code = compile(self.contents, mod.__file__, "exec")
-        exec code in mod.__dict__
+        exec(code, mod.__dict__)
         return mod
 
 
@@ -74,7 +74,7 @@ def get_module_meta_path(module_description):
     """
     raw_format = module_description[0].split(':')
     if raw_format[0] in ('zip', 'tar'):
-        f = StringIO()
+        f = BytesIO()
         f.write(decodestring(module_description[1]))
         f.seek(0)
         if raw_format[0] == 'zip':
@@ -98,4 +98,4 @@ if __name__ == '__main__':
     from colorize import colorize, COLORS
     from testmodule import printme
 
-    print colorize(printme(), COLORS.get('red'))
+    print(colorize(printme(), COLORS.get('red')))
