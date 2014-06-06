@@ -50,11 +50,19 @@ class Finder:
 
 
 def get_modules_meta_paths(modules_descriptions):
+    """Generator to get all meta_paths starting from a list of descriptions
+    Calls get_module_meta_path internally
+    """
     for module_description in modules_descriptions:
         yield get_module_meta_path(module_description)
 
 
 def get_module_meta_path(module_description):
+    """Returns the finder to be appended to sys.meta_path
+    module_description is a tuple of 2 elements:
+        format: either 'zip', 'tar', 'tar:gz', 'tar:bz' or a string to be used as module name
+        content: a base64 encoded string of a zip archive, a tar(gz/bz2) archive or a plain python module
+    """
     raw_format = module_description[0].split(':')
     if raw_format[0] in ('zip', 'tar'):
         f = StringIO()
@@ -70,3 +78,15 @@ def get_module_meta_path(module_description):
     else:
         module_dict = {module_description[0]: decodestring(module_description[1])}
     return Finder(module_dict)
+
+
+if __name__ == '__main__':
+    #So examples works out of the box
+    sys.path.append('examples')
+    import external_modules
+
+    sys.meta_path.extend(get_modules_meta_paths((external_modules.A_MODULE_MYTEST, external_modules.MODULE_COLORIZE)))
+    from colorize import colorize, COLORS
+    from testmodule import printme
+
+    print colorize(printme(), COLORS.get('red'))
